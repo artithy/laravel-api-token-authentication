@@ -21,32 +21,38 @@ class ProductController extends Controller
             ], 401);
         }
 
-        $validated = $request->validate([
+        $fixedCategoryId = 1;
+
+        $request->validate([
             'name'           => 'required|string|max:255',
             'sku'            => 'required|string|unique:products,sku',
-            'category_id'    => 'required|exists:categories,id',
             'price'          => 'required|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0',
             'vat_percentage' => 'nullable|numeric|min:0',
-            'status'         => 'nullable|in:active,inactive',
+            'stock_quantity' => 'required|integer|min:0',
+
         ]);
 
-        try {
-            $validated['status'] = $validated['status'] ?? 'active';
+        $product = Product::create([
+            'name' => $request['name'],
+            'sku' => $request['sku'],
+            'category_id' => $fixedCategoryId,
+            'price' => $request['price'],
+            'discount_price' => $request['discount_price'],
+            'vat_percentage' => $request['vat_percentage'],
+            'stock_quantity' => $request['stock_quantity'],
+            'status' => $request['status'] ?? 'active',
+        ]);
 
-            $product = Product::create($validated);
-
+        if (!$product) {
             return response()->json([
-                'success' => true,
-                'message' => 'Product created successfully',
-                'product' => $product,
-            ], 201);
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
                 'message' => 'Product creation failed',
-                'error'   => $e->getMessage(),
             ], 500);
         }
+
+        return response()->json([
+            'message' => 'product created successfully',
+            'product' => $product,
+        ], 201);
     }
 }
