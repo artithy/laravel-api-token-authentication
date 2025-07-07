@@ -21,7 +21,7 @@ class ProductController extends Controller
             ], 401);
         }
 
-        $fixedCategoryId = 1;
+
 
         $request->validate([
             'name'           => 'required|string|max:255',
@@ -36,7 +36,7 @@ class ProductController extends Controller
         $product = Product::create([
             'name' => $request['name'],
             'sku' => $request['sku'],
-            'category_id' => $fixedCategoryId,
+            'category_id' => $request['category_id'],
             'price' => $request['price'],
             'discount_price' => $request['discount_price'],
             'vat_percentage' => $request['vat_percentage'],
@@ -54,5 +54,19 @@ class ProductController extends Controller
             'message' => 'product created successfully',
             'product' => $product,
         ], 201);
+    }
+
+    public function productsWithCategories(Request $request)
+    {
+
+        // $products = Product::all();
+        $products = Product::leftJoin("categories", "products.category_id", "=", "categories.id")
+            ->select("products.id", "products.name", "products.price", "products.discount_price", "products.vat_percentage", "products.stock_quantity", "products.status", "products.created_at", "categories.name as category_name")
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'products' => $products,
+        ]);
     }
 }
