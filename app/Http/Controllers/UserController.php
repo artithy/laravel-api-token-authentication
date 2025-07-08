@@ -39,7 +39,7 @@ class UserController extends Controller
             ], 500);
         }
 
-        $token_string = bin2hex(random_bytes(32)); // Generate a random token
+        $token_string = bin2hex(random_bytes(32));
         $token = Token::create([
             'token' => $token_string,
             'user_id' => $user->id,
@@ -59,18 +59,8 @@ class UserController extends Controller
 
     public function getProfile(Request $request)
     {
-        $requestedToken = $request->token;
-        $token = Token::where('token', $requestedToken)
-            ->where('is_active', 1)
-            ->first();
-
-        if (!$token) {
-            return response()->json([
-                'message' => 'Invalid or inactive token',
-            ], 401);
-        }
+        $token = $request->attributes->get('token');
         $user = Userr::find($token->user_id);
-        // 
 
         return response()->json([
             'user' => $user,
@@ -79,16 +69,7 @@ class UserController extends Controller
 
     public function logout(Request $request)
     {
-        $requestedToken = $request->token;
-        $token = Token::where('token', $requestedToken)
-            ->where('is_active', 1)
-            ->first();
-
-        if (!$token) {
-            return response()->json([
-                'message' => 'Invalid or inactive token',
-            ], 401);
-        }
+        $token = $request->attributes->get('token');
 
         $token->is_active = 0;
         $token->save();

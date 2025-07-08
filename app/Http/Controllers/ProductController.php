@@ -12,17 +12,6 @@ class ProductController extends Controller
     public function store(Request $request)
     {
 
-        $token = Token::where('token', $request->token)->where('is_active', 1)->first();
-
-        if (!$token) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid or expired token',
-            ], 401);
-        }
-
-
-
         $request->validate([
             'name'           => 'required|string|max:255',
             'sku'            => 'required|string|unique:products,sku',
@@ -32,6 +21,7 @@ class ProductController extends Controller
             'stock_quantity' => 'required|integer|min:0',
 
         ]);
+
 
         $product = Product::create([
             'name' => $request['name'],
